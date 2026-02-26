@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Vr Experience - Adrián</title>
+  <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.2.0/dist/aframe-extras.min.js"></script>
+
+  <style>
+    :root { --gold: #ffcc00; --neon: #39ff14; }
+    body { margin: 0; overflow: hidden; background-color: #000; font-family: 'Segoe UI', sans-serif; }
+    
+    #menu, #final-screen {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background: radial-gradient(circle at center, #1a1a1a 0%, #000000 100%);
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      z-index: 9999; color: white;
+    }
+    
+    #final-screen { display: none; background: rgba(0,0,0,0.95); z-index: 10000; }
+
+    .card {
+      background: rgba(15, 15, 15, 0.98); padding: 40px 50px; border-radius: 20px;
+      border: 1px solid var(--gold); box-shadow: 0 0 50px rgba(0, 0, 0, 1);
+      text-align: center; max-width: 450px;
+    }
+
+    h1 { margin: 0; font-size: 2.4em; letter-spacing: 4px; color: var(--gold); text-transform: uppercase; }
+    h2 { color: var(--neon); font-size: 2.2em; margin: 0; }
+    
+    .instructions { text-align: left; border-top: 1px solid #333; padding-top: 20px; margin: 20px 0; font-size: 0.95em; }
+    .instructions b { color: var(--gold); }
+    
+    button {
+      padding: 16px 45px; font-size: 1.1em; border: none; border-radius: 4px;
+      background: var(--gold); color: #000; font-weight: bold; cursor: pointer;
+      text-transform: uppercase; transition: 0.3s;
+    }
+    button:hover { background: white; transform: scale(1.05); box-shadow: 0 0 20px var(--gold); }
+    .hidden { display: none !important; }
+    #stats { font-size: 1.5em; color: var(--gold); margin: 15px 0; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+  <div id="menu">
+    <div class="card">
+      <h1>CATCH THE IMAGES</h1>
+      <p style="color: #666; font-style: italic; margin-bottom: 15px;">Hecho por Adrián</p>
+      <div class="instructions">
+        <p>🛸 <b>MODO MANOS LIBRES:</b> Coloca el móvil en las gafas VR.</p>
+        <p>🚶‍♂️ <b>TOUR NPC:</b> Te moverás solo por la ciudad automáticamente.</p>
+        <p>🎯 <b>MISIÓN:</b> Busca las imágenes y mantén el puntero <b>1.5 segundos</b>.</p>
+      </div>
+      <button id="start-btn">ENTRAR A LA CIUDAD</button>
+    </div>
+  </div>
+
+  <div id="final-screen">
+    <div class="card" style="border-color: var(--neon);">
+      <h2>¡ENHORABUENA!</h2>
+      <p id="stats"></p> <p style="margin: 10px 0 25px 0; font-size: 1.1em; color: #ccc;">Has recolectado todas las imágenes.</p>
+      <button onclick="location.reload()" style="background: var(--neon);">VOLVER A EMPEZAR</button>
+    </div>
+  </div>
+
+  <a-scene renderer="colorManagement: true; antialias: true; shadowMapEnabled: true;">
+    <a-assets>
+      <a-asset-item id="mundo" src="mundo.glb"></a-asset-item>
+      <audio id="jazz" src="jazz.mp3" preload="auto"></audio>
+      <img id="img1" src="imagen1.jpg">
+      <img id="img2" src="imagen2.jpg">
+      <img id="img3" src="imagen3.jpg">
+    </a-assets>
+
+    <a-sky id="sky" color="#87CEEB"></a-sky> 
+    <a-entity light="type: ambient; intensity: 0.5"></a-entity>
+    <a-entity id="sol" light="type: directional; intensity: 1.2; castShadow: true; shadowCameraLeft: -60; shadowCameraRight: 60; shadowCameraTop: 60; shadowCameraBottom: -60;" position="20 40 20"></a-entity>
+
+    <a-entity gltf-model="#mundo" shadow="receive: true; castShadow: true"></a-entity>
+
+    <a-plane id="bot1" class="clickable nextbot" src="#img1" width="2.5" height="3.2" material="shader: flat; side: double" shadow="cast: true"
+             animation__fusing="property: scale; to: 1.2 1.2 1.2; dur: 1500; startEvents: fusing"
+             animation__reset="property: scale; to: 1 1 1; dur: 200; startEvents: mouseleave">
+    </a-plane>
+    <a-plane id="bot2" class="clickable nextbot" src="#img2" width="2.5" height="3.2" material="shader: flat; side: double" shadow="cast: true"
+             animation__fusing="property: scale; to: 1.2 1.2 1.2; dur: 1500; startEvents: fusing"
+             animation__reset="property: scale; to: 1 1 1; dur: 200; startEvents: mouseleave">
+    </a-plane>
+    <a-plane id="bot3" class="clickable nextbot" src="#img3" width="2.5" height="3.2" material="shader: flat; side: double" shadow="cast: true"
+             animation__fusing="property: scale; to: 1.2 1.2 1.2; dur: 1500; startEvents: fusing"
+             animation__reset="property: scale; to: 1 1 1; dur: 200; startEvents: mouseleave">
+    </a-plane>
+
+    <a-entity id="player-rig" position="0 0 0" 
+              animation="property: position; from: 0 0 -10; to: 0 0 10; dur: 22000; dir: alternate; loop: true; easing: linear">
+      <a-entity id="main-camera" camera look-controls position="0 1.6 0">
+        
+        <a-entity position="0 0 -1">
+          <a-ring color="#fff" radius-inner="0.018" radius-outer="0.022" opacity="0.3"></a-ring>
+          <a-cursor 
+            id="fuse-cursor"
+            raycaster="objects: .clickable; far: 100" 
+            fuse="true" 
+            fuse-timeout="1500" 
+            geometry="primitive: ring; radiusInner: 0.01; radiusOuter: 0.018"
+            material="color: #ffcc00; shader: flat"
+            animation__fusing="property: material.color; from: #ffcc00; to: #39ff14; dur: 1500; startEvents: fusing"
+            animation__reset="property: material.color; to: #ffcc00; dur: 200; startEvents: mouseleave">
+          </a-cursor>
+        </a-entity>
+
+        <a-entity position="1.1 0.7 -1.2">
+            <a-text id="contador-gui" value="0 / 3" color="#ffcc00" width="1.6" position="0 0.15 0" align="right"></a-text>
+            <a-text id="reloj-3d" value="12:00" color="#ffcc00" width="2.2" align="right" font="exo2semibold"></a-text>
+        </a-entity>
+      </a-entity>
+    </a-entity>
+  </a-scene>
+
+  <script>
+    let recolectados = 0;
+    let startTime; // Se definirá al pulsar Start
+    let totalTime;
+    let gameClockStart = Date.now();
+    const bots = document.querySelectorAll('.nextbot');
+    const reloj3D = document.querySelector('#reloj-3d');
+
+    // POSICIONAMIENTO ALEATORIO LEJANO
+    bots.forEach(bot => {
+      let sideX = Math.random() > 0.5 ? 1 : -1;
+      let sideZ = Math.random() > 0.5 ? 1 : -1;
+      bot.setAttribute('position', {
+        x: (15 + Math.random() * 15) * sideX,
+        y: 4 + Math.random() * 4,
+        z: (15 + Math.random() * 15) * sideZ
+      });
+    });
+
+    let botData = Array.from(bots).map(() => ({
+      vx: (Math.random() - 0.5) * 0.2,
+      vz: (Math.random() - 0.5) * 0.2,
+      lastChange: 0
+    }));
+
+    function update() {
+      let now = Date.now();
+      // Reloj de ambientación (el que ya tenías)
+      let elapsed = (now - gameClockStart) % 60000;
+      let totalMinutes = (elapsed / 60000) * 1440;
+      let h = Math.floor(totalMinutes / 60), m = Math.floor(totalMinutes % 60);
+      if(reloj3D) reloj3D.setAttribute('value', `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`);
+
+      let camPos = new THREE.Vector3();
+      document.querySelector('#main-camera').object3D.getWorldPosition(camPos);
+
+      bots.forEach((bot, i) => {
+        if (bot.getAttribute('visible') !== false) {
+          if (now - botData[i].lastChange > 2000) {
+            botData[i].vx = (Math.random() - 0.5) * 0.4;
+            botData[i].vz = (Math.random() - 0.5) * 0.4;
+            botData[i].lastChange = now;
+          }
+          let pos = bot.getAttribute('position');
+          pos.x += botData[i].vx;
+          pos.z += botData[i].vz;
+          if (Math.abs(pos.x) > 40) botData[i].vx *= -1;
+          if (Math.abs(pos.z) > 40) botData[i].vz *= -1;
+          bot.setAttribute('position', pos);
+          bot.object3D.lookAt(camPos.x, pos.y, camPos.z);
+        }
+      });
+      requestAnimationFrame(update);
+    }
+
+    function createBurst(pos) {
+      const colors = ['#39ff14', '#ffffff', '#ffcc00'];
+      for(let i=0; i<3; i++) {
+        const burst = document.createElement('a-ring');
+        burst.setAttribute('position', pos);
+        burst.setAttribute('radius-inner', '0.2');
+        burst.setAttribute('radius-outer', '0.4');
+        burst.setAttribute('color', colors[i]);
+        burst.setAttribute('rotation', '-90 0 0');
+        burst.setAttribute('animation', `property: scale; to: ${25 + i*5} ${25 + i*5} ${25 + i*5}; dur: 1000; easing: easeOutExpo`);
+        burst.setAttribute('animation__fade', 'property: material.opacity; from: 1; to: 0; dur: 1000; easing: easeOutExpo');
+        document.querySelector('a-scene').appendChild(burst);
+        setTimeout(() => burst.remove(), 1100);
+      }
+    }
+
+    // INICIAR JUEGO Y MÚSICA
+    document.getElementById('start-btn').addEventListener('click', () => {
+      document.getElementById('menu').classList.add('hidden');
+      startTime = Date.now(); // Empezamos a contar el tiempo de juego
+      update();
+      
+      const audio = document.createElement('a-entity');
+      audio.setAttribute('sound', 'src: #jazz; autoplay: true; loop: true; volume: 0.3');
+      document.querySelector('a-scene').appendChild(audio);
+    });
+
+    bots.forEach(bot => {
+      bot.addEventListener('click', function() {
+        if (this.getAttribute('visible') !== false) {
+          createBurst(this.getAttribute('position'));
+          this.setAttribute('visible', 'false');
+          this.classList.remove('clickable'); 
+          recolectados++;
+          document.querySelector('#contador-gui').setAttribute('value', `${recolectados} / 3`);
+          
+          if (recolectados === 3) {
+            // Calcular tiempo total
+            let endTime = Date.now();
+            totalTime = ((endTime - startTime) / 1000).toFixed(2);
+            document.getElementById('stats').innerText = `Tiempo: ${totalTime} segundos`;
+            
+            setTimeout(() => { 
+              document.getElementById('final-screen').style.display = 'flex'; 
+            }, 800);
+          }
+        }
+      });
+    });
+  </script>
+</body>
+</html>
